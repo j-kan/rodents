@@ -10,9 +10,11 @@ import glob
 import re
 from math  import log
 from dicts import DefaultDict
+from itertools import groupby
 
 
 ZONE_COL = 6
+TIME_COL = 0
 
 def bigrams(words):
     """Given an array of words, returns a dictionary of dictionaries,
@@ -64,6 +66,18 @@ def zones(filename):
     return [row[ZONE_COL] for row in reader] 
 
 
+def zones_by_epoch(filename, num_epochs):
+  """retrieve the zone sequence from a csv file, splitting up into a number of epochs"""
+
+  def zones_with_epoch():
+    with open(filename, 'r') as f: 
+      reader = csv.reader(f) 
+      reader.next()
+      return [(int (float(row[TIME_COL]) // (1800/num_epochs)), row[ZONE_COL]) for row in reader] 
+
+  return [[v for (k,v) in group] for key, group in groupby(zones_with_epoch(), lambda x: x[0])]
+    
+
 def print_header():
   print ",".join(["Handling", "Rat", "Session", "Zone Transitions", "Entropy", "Between Zone Transitions", "Between Zone Entropy"])
 
@@ -97,10 +111,8 @@ def process_file(filename, handling, rat, session):
 
     between_zone_count = between_zone_count + bz_count
     between_zone_entropy = between_zone_entropy + (bz_count * bz_entropy)
-     
     
-    details = ' '.join([ "%4s:%f" % pair for pair in p.iteritems()])
-
+    #details = ' '.join([ "%4s:%f" % pair for pair in p.iteritems()]) 
     #print "\t%4s : %4d * %f -> %4s" % (zone, count, entropy, details)
   
   print ','.join([handling, rat, session, str(total_count), str(total_entropy), str(between_zone_count), str(between_zone_entropy)])
