@@ -79,3 +79,28 @@ hn2 = h[h$Session ==2 & h$Handling=='n',]
 t.test(hn1$Entropy, hn2$Entropy, paired=TRUE, alternative="greater")
 t.test(hn1$Between.Zone.Entropy, hn2$Between.Zone.Entropy, paired=TRUE, alternative="greater")
 
+
+
+
+
+
+hbye = read.csv("wse.csv")
+
+png("h-by-epoch.png",width=500,height=600)
+qplot(factor(Epoch), Entropy, data=hbye, facets=Handling~Session, color=Handling, shape=Rat, geom=c("boxplot","jitter"))
+dev.off()
+
+png("bz-transitions-by-epoch.png",width=500,height=600)
+qplot(factor(Epoch), Between.Zone.Transitions, data=hbye, facets=Handling~Session, color=Handling, shape=Rat, geom=c("boxplot","jitter"))
+dev.off()
+
+hbye3 = read.csv("wse3.csv")
+
+png("bz-transitions-by-3-epochs.png",width=500,height=600)
+qplot(factor(Epoch), Between.Zone.Transitions, data=hbye3, facets=Handling~Session, color=Handling, shape=Rat, geom=c("boxplot","jitter"))
+dev.off()
+
+png("h-by-3-epochs.png",width=500,height=600)
+qplot(factor(Epoch), Entropy, data=hbye3, facets=Handling~Session, color=Handling, shape=Rat, geom=c("boxplot","jitter"))
+dev.off()
+
