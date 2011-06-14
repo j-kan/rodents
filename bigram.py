@@ -5,15 +5,13 @@
 
 import sys
 import csv
-import os
-import glob
-import re
+import directory_search
 from math  import log
 from dicts import DefaultDict
 from itertools import groupby
 
 
-ZONE_COL = 6
+ZONE_COL = 3
 TIME_COL = 0
 
 def bigrams(words):
@@ -78,11 +76,24 @@ def zones_by_epoch(filename, num_epochs):
   return [[v for (k,v) in group] for key, group in groupby(zones_with_epoch(), lambda x: x[0])]
     
 
+
+#def distance_by_epoch(filename, num_epochs):
+  #"""retrieve the distance traveled from a csv file, splitting up into a number of epochs"""
+
+  #def zones_with_epoch():
+    #with open(filename, 'r') as f: 
+      #reader = csv.reader(f) 
+      #reader.next()
+      #return [(int (float(row[TIME_COL]) // (1800/num_epochs)), row[ZONE_COL]) for row in reader] 
+
+  #return [[v for (k,v) in group] for key, group in groupby(zones_with_epoch(), lambda x: x[0])]
+    
+
 def print_header():
-  print ",".join(["Handling", "Rat", "Session", "Zone Transitions", "Entropy", "Between Zone Transitions", "Between Zone Entropy"])
+  print ",".join(["Handling", "Rat", "Session", "Zone Transitions", "Entropy", "Unweighted Entropy", "Between Zone Transitions", "Between Zone Entropy", "Between Zone Unweighted Entropy"])
 
 
-def process_file(filename, handling, rat, session): 
+def process_file(filename, handling, rat, session, print_dicts=False): 
   allzones = zones(filename)
 
   bi = bigrams(allzones)
@@ -95,14 +106,17 @@ def process_file(filename, handling, rat, session):
 
   total_count = 0
   total_entropy = 0
+  total_unweighted_entropy = 0
   between_zone_count = 0
   between_zone_entropy = 0
+  between_zone_unweighted_entropy = 0
 
   for (p, zone) in pp.sorted():
     entropy = h(p.values())
     count = sum(bi[zone].values())
 
     total_count = total_count + count
+    total_unweighted_entropy = total_unweighted_entropy + entropy
     total_entropy = total_entropy + (count * entropy)
 
     bz_p = between_zone_pp[zone]
@@ -110,12 +124,17 @@ def process_file(filename, handling, rat, session):
     bz_count = sum(between_zone_bi[zone].values())
 
     between_zone_count = between_zone_count + bz_count
+    between_zone_unweighted_entropy = between_zone_unweighted_entropy + bz_entropy
     between_zone_entropy = between_zone_entropy + (bz_count * bz_entropy)
     
-    #details = ' '.join([ "%4s:%f" % pair for pair in p.iteritems()]) 
-    #print "\t%4s : %4d * %f -> %4s" % (zone, count, entropy, details)
+    if print_dicts: 
+      details = ' '.join([ "%4s:%f" % pair for pair in p.iteritems()]) 
+      print "\t%4s : %4d * %f -> %4s" % (zone, count, entropy, details)
   
-  print ','.join([handling, rat, session, str(total_count), str(total_entropy), str(between_zone_count), str(between_zone_entropy)])
+  print ','.join(
+      [str(x) for x in [handling, rat, session, 
+                        total_count, total_entropy, total_unweighted_entropy, 
+                        between_zone_count, between_zone_entropy, between_zone_unweighted_entropy]])
 
   #print "\tzone transitions:       %d" % total_count
   #print "\ttotal entropy:          %f" % total_entropy 
@@ -123,26 +142,11 @@ def process_file(filename, handling, rat, session):
 
 
 def main(argv=None):
-  #root_dir = 'X36TrackDataS1S2-5-23-11'
 
-  if argv is None:
-      argv = sys.argv
+  print_header()
 
-  if len(argv) == 2:
-      root_dir = argv[1]
-   
-      grepper = re.compile('^%s\/([en])r(\d+)s([12])\.csv$' % root_dir)
-
-      print_header()
-
-      for infile in glob.glob( '%s/*.csv' % root_dir):
-        m = grepper.match(infile)
-        if m:
-          handling, rat, session = (m.group(1), m.group(2), m.group(3))
-          process_file(infile, handling, rat, session)
-
-  else:
-    print "please specify a root directory"
+  for (infile, handling, rat, session) in directory_search.main(argv): 
+    process_file(infile, handling, rat, session)
 
 
 if __name__ == '__main__':

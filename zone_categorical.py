@@ -2,8 +2,7 @@
 
 import sys
 import csv
-import re
-import glob
+import directory_search
 
 
 USAGE = """
@@ -22,7 +21,7 @@ Usage:
 """
 
 
-FIRST_ZONE_COL = 6
+FIRST_ZONE_COL = 3
 
 def process_stream(stream, outstream): 
 
@@ -44,19 +43,15 @@ def process_stream(stream, outstream):
 
 
 def process_all_files(root_dir):
-  """Translate all files in a directory"""
+  """Translate all raw csv files in a directory to zone categorical files"""
 
   #root_dir = 'X36TrackDataS1S2-5-23-11'
-  grepper = re.compile('^%s\/X36-([en])h-T\d\dr(\d+)s([12])\.csv$' % root_dir)
   
-  for infile in glob.glob( '%s/X36-*.csv' % root_dir):
+  for (infile, outfile) in directory_search.raw_csv_files(root_dir):
     print infile
-    m = grepper.match(infile)
-    if m:
-      handling, rat, session = (m.group(1), m.group(2), m.group(3))
-      with open(infile, 'r') as f:
-        with open("%s/%sr%ss%s.csv" % (root_dir, handling.lower(), rat, session), 'w') as of:
-          process_stream(f, of)
+    with open(infile, 'r') as f: 
+      with open(outfile, 'w') as of: 
+        process_stream(f, of)
 
 
 
