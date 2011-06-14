@@ -2,6 +2,7 @@
 
 import sys
 import csv
+import time
 import directory_search
 
 
@@ -23,6 +24,18 @@ Usage:
 
 FIRST_ZONE_COL = 3
 
+
+def translate_time(strtime):
+  if ':' in strtime:
+    secs, fraction = strtime.split('.')
+    ts = time.strptime(secs,"%H:%M:%S")
+    seconds = ts.tm_sec + 60*ts.tm_min + 3600*ts.tm_hour
+    return "%d.%s" % (seconds, fraction)
+  else:
+    return strtime
+
+
+
 def process_stream(stream, outstream): 
 
   """Translate boolean zone indicators in a single csv file 
@@ -36,7 +49,8 @@ def process_stream(stream, outstream):
 
   for row in reader: 
     zone = [field.split(' ')[1] for (field,val) in zip(infields[FIRST_ZONE_COL:], row[FIRST_ZONE_COL:]) if val == "1"]
-    outrow = row[0:FIRST_ZONE_COL] + zone
+    seconds = translate_time(row[0])
+    outrow = [seconds] + row[1:FIRST_ZONE_COL] + zone
     outstream.write(','.join(outrow))
     outstream.write('\n')
 
