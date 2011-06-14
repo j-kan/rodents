@@ -5,9 +5,7 @@
 
 import sys
 import csv
-import os
-import glob
-import re
+import directory_search
 from math  import log
 from dicts import DefaultDict
 from bigram import zones, bigrams, probs_bigrams, remove_self_transitions, h
@@ -50,25 +48,10 @@ def process_file(filename, handling, rat, session):
 
 def main(argv=None):
   #root_dir = 'X36TrackDataS1S2-5-23-11'
+  print_header()
 
-  if argv is None:
-      argv = sys.argv
-
-  if len(argv) == 2:
-      root_dir = argv[1]
-   
-      grepper = re.compile('^%s\/([en])r(\d+)s([12])\.csv$' % root_dir)
-
-      print_header()
-
-      for infile in glob.glob( '%s/*.csv' % root_dir):
-        m = grepper.match(infile)
-        if m:
-          handling, rat, session = (m.group(1), m.group(2), m.group(3))
-          process_file(infile, handling, rat, session)
-
-  else:
-    print "please specify a root directory"
+  for (infile, handling, rat, session) in directory_search.main(argv): 
+    process_file(infile, handling, rat, session)
 
 
 if __name__ == '__main__':

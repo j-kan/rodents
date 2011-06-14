@@ -8,8 +8,9 @@ import directory_search
 
 USAGE = """
 
-Translates raw CSVs with boolean zone indicators into CSVs 
-with a single categorical 'Zone' column.
+Translates raw CSVs with boolean zone indicators into CSVs with a single
+categorical 'Zone' column, and converts 'HH:MM:SS.SS'-formatted times into
+seconds.
 
 Usage: 
      %s <directory>
@@ -25,7 +26,11 @@ Usage:
 FIRST_ZONE_COL = 3
 
 
-def translate_time(strtime):
+def translate_time_format(strtime):
+
+  """Translates 'HH:MM:SS.SS'-formatted times into seconds, 
+     returning the result as a string."""
+
   if ':' in strtime:
     secs, fraction = strtime.split('.')
     ts = time.strptime(secs,"%H:%M:%S")
@@ -49,7 +54,7 @@ def process_stream(stream, outstream):
 
   for row in reader: 
     zone = [field.split(' ')[1] for (field,val) in zip(infields[FIRST_ZONE_COL:], row[FIRST_ZONE_COL:]) if val == "1"]
-    seconds = translate_time(row[0])
+    seconds = translate_time_format(row[0])
     outrow = [seconds] + row[1:FIRST_ZONE_COL] + zone
     outstream.write(','.join(outrow))
     outstream.write('\n')
@@ -57,6 +62,7 @@ def process_stream(stream, outstream):
 
 
 def process_all_files(root_dir):
+
   """Translate all raw csv files in a directory to zone categorical files"""
 
   #root_dir = 'X36TrackDataS1S2-5-23-11'
