@@ -40,24 +40,50 @@ def translate_time_format(strtime):
     return strtime
 
 
-
-def process_stream(stream, outstream): 
+def csv_pipe(stream):
 
   """Translate boolean zone indicators in a single csv file 
      into a 'Zone' categorical variable for each row"""
 
   reader = csv.reader(stream) 
   infields = reader.next()
-  outfields = infields[0:FIRST_ZONE_COL] + ['Zone']
-  outstream.write(','.join(outfields))
-  outstream.write('\n')
+  yield infields[0:FIRST_ZONE_COL] + ['Zone']
 
   for row in reader: 
     zone = [field.split(' ')[1] for (field,val) in zip(infields[FIRST_ZONE_COL:], row[FIRST_ZONE_COL:]) if val == "1"]
     seconds = translate_time_format(row[0])
-    outrow = [seconds] + row[1:FIRST_ZONE_COL] + zone
-    outstream.write(','.join(outrow))
+    yield [seconds] + row[1:FIRST_ZONE_COL] + zone
+
+
+def time_adjusted_pipe(stream, interval = 0.1):
+  current_time = -1
+
+  for row in csv_pipe(stream):
+    #print row
+    rawsecs = row[0]
+    if rawsecs == "Time":
+      yield row
+    else:
+      seconds = round(float(rawsecs)/interval) * interval
+      if current_time == -1:
+        current_time = seconds - interval
+
+      while round(seconds - current_time, 1) > 0:
+          current_time = current_time + interval
+          #print current_time, seconds
+          yield ["%.1f" % current_time] + row[1:]
+
+
+
+def process_stream(stream, outstream): 
+
+  """Translate boolean zone indicators in a single csv file 
+     into a 'Zone' categorical variable for each row"""
+
+  for row in time_adjusted_pipe(stream):
+    outstream.write(','.join(row))
     outstream.write('\n')
+
 
 
 
