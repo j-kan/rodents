@@ -56,6 +56,9 @@ def csv_pipe(stream):
 
 
 def time_adjusted_pipe(stream, interval = 0.1):
+
+  """Generator that interpolates rows for times between observations"""
+
   current_time = -1
 
   for row in csv_pipe(stream):
