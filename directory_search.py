@@ -7,22 +7,23 @@ import glob
 
 def raw_csv_files(root_dir):
 
-  grepper = re.compile('^%s\/X36TrackDataS(\d)\/X36-([en])h-T29r(\d+)s(\d)\.csv$' % root_dir) 
+  #grepper = re.compile('^%s\/X36TrackDataS(\d)\/X36-([en])h-T29r(\d+)s(\d)\.csv$' % root_dir) 
+  grepper = re.compile('^%s\/X\d+-(\w+)-T\d+r(\d+)s(\d)\.csv$' % root_dir) 
   
-  for infile in glob.glob( '%s/X36*/*.csv' % root_dir): 
+  for infile in glob.glob( '%s/*.csv' % root_dir): 
     m = grepper.match(infile) 
     if m: 
-      session, handling, rat = (m.group(1), m.group(2), m.group(3))
-      if session != m.group(4):
-        sys.stderr.write('session indicators do not match for: %s' % m.string) 
+      handling, rat, session = (m.group(1), m.group(2), m.group(3))
+      #if session != m.group(4):
+        #sys.stderr.write('session indicators do not match for: %s' % m.string) 
         
-      outfile = "%s/%sr%ss%s.csv" % (root_dir, handling.lower(), rat, session)
+      outfile = "%s/%s-r%s-s%s.csv" % (root_dir, handling.lower(), rat, session)
 
       yield (infile, outfile)
 
 
 def zone_csv_directory_search(root_dir):
-  grepper = re.compile('^%s\/([en])r(\d+)s(\d)\.csv$' % root_dir)
+  grepper = re.compile('^%s\/(\w+)-r(\d+)-s(\d)\.csv$' % root_dir)
   
   for infile in glob.glob( '%s/*.csv' % root_dir): 
     m = grepper.match(infile) 

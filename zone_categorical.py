@@ -23,7 +23,7 @@ Usage:
 """
 
 
-FIRST_ZONE_COL = 3
+FIRST_ZONE_COL = 5
 
 
 def translate_time_format(strtime):

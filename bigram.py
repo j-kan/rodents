@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 # usage: ./bigram.py X36TrackDataS1S2-5-23-11 > entropy.csv
+#        ./bigram.py X36TrackDataS12345_060111_Dani > s4-t-entropy.csv
 
 
 import sys
@@ -90,7 +91,7 @@ def zones_by_epoch(filename, num_epochs):
     
 
 def print_header():
-  print ",".join(["Handling", "Rat", "Session", "Zone Transitions", "Entropy", "Unweighted Entropy", "Between Zone Transitions", "Between Zone Entropy", "Between Zone Unweighted Entropy"])
+  print ",".join(["Treatment", "Rat", "Session", "Zone Transitions", "Entropy", "Unweighted Entropy", "Between Zone Transitions", "Between Zone Entropy", "Between Zone Unweighted Entropy"])
 
 
 def process_file(filename, handling, rat, session, print_dicts=False): 
