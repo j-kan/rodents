@@ -7,13 +7,16 @@
 import sys
 import csv
 import directory_search
-from math  import log
+from math  import log,sqrt
 from dicts import DefaultDict
 from itertools import groupby
 
 
-ZONE_COL = 3
 TIME_COL = 0
+X_COL    = 1
+Y_COL    = 2
+ZONE_COL = 3
+
 
 def bigrams(words):
     """Given an array of words, returns a dictionary of dictionaries,
@@ -55,7 +58,6 @@ def h(p):
 
     return reduce(lambda a,b: a+b, [-x*log(x)/log(2) for x in p])
     
-    
 
 def zones(filename):
   """retrieve the zone sequence from a csv file"""
@@ -78,6 +80,25 @@ def zones_by_epoch(filename, num_epochs):
     
 
 
+def xy(filename):
+  """retrieve x,y positions from a csv file"""
+  with open(filename, 'r') as f: 
+    reader = csv.reader(f) 
+    reader.next()
+    return [(int(row[X_COL]),int(row[Y_COL])) for row in reader if row[X_COL] != '' and row[Y_COL] != ''] 
+
+
+def euclidean_distance((x2,y2),(x1,y1)):
+  def square(x):
+    return x*x
+  return sqrt(square(x2-x1) + square(y2-y1))
+
+
+def total_distance(pos): 
+  return sum([euclidean_distance(p2, p1) for [p2,p1] in zip(pos[1:], pos[0:len(pos)-1])])
+
+
+
 #def distance_by_epoch(filename, num_epochs):
   #"""retrieve the distance traveled from a csv file, splitting up into a number of epochs"""
 
@@ -91,11 +112,12 @@ def zones_by_epoch(filename, num_epochs):
     
 
 def print_header():
-  print ",".join(["Treatment", "Rat", "Session", "Zone Transitions", "Entropy", "Unweighted Entropy", "Between Zone Transitions", "Between Zone Entropy", "Between Zone Unweighted Entropy"])
+  print ",".join(["Treatment", "Rat", "Session", "Distance", "Zone Transitions", "Entropy", "Unweighted Entropy", "Between Zone Transitions", "Between Zone Entropy", "Between Zone Unweighted Entropy"])
 
 
 def process_file(filename, handling, rat, session, print_dicts=False): 
   allzones = zones(filename)
+  dist = total_distance(xy(filename))
 
   bi = bigrams(allzones)
   pp = probs_bigrams(bi)
@@ -133,7 +155,7 @@ def process_file(filename, handling, rat, session, print_dicts=False):
       print "\t%4s : %4d * %f -> %4s" % (zone, count, entropy, details)
   
   print ','.join(
-      [str(x) for x in [handling, rat, session, 
+      [str(x) for x in [handling, rat, session, dist, 
                         total_count, total_entropy, total_unweighted_entropy, 
                         between_zone_count, between_zone_entropy, between_zone_unweighted_entropy]])
 
