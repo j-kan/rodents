@@ -23,7 +23,6 @@ Usage:
 """
 
 
-FIRST_ZONE_COL = 5
 
 
 def translate_time_format(strtime):
@@ -47,12 +46,13 @@ def csv_pipe(stream):
 
   reader = csv.reader(stream) 
   infields = reader.next()
-  yield infields[0:FIRST_ZONE_COL] + ['Zone']
+  first_zone_column = next(i for i in xrange(len(infields)) if infields[i].startswith('In '))
+  yield infields[0:first_zone_column] + ['Zone']
 
   for row in reader: 
-    zone = [field.split(' ')[1] for (field,val) in zip(infields[FIRST_ZONE_COL:], row[FIRST_ZONE_COL:]) if val == "1"]
+    zone = [field.split(' ')[1] for (field,val) in zip(infields[first_zone_column:], row[first_zone_column:]) if val == "1"]
     seconds = translate_time_format(row[0])
-    yield [seconds] + row[1:FIRST_ZONE_COL] + zone
+    yield [seconds] + row[1:first_zone_column] + zone
 
 
 def time_adjusted_pipe(stream, interval = 0.1):
