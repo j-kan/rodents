@@ -13,7 +13,7 @@ from bigram import zones_by_epoch, bigrams, probs_bigrams, remove_self_transitio
 
 
 def print_header():
-  print ",".join(["Handling", "Rat", "Session", "Epoch", "Zone Transitions", "Entropy", "Between Zone Transitions", "Between Zone Entropy"])
+  print ",".join(["Treatment", "Rat", "Session", "Epoch", "Zone Transitions", "Entropy", "X Zone Transitions", "X Zone Entropy"])
 
 
 def process_file(filename, handling, rat, session, print_dict=False): 

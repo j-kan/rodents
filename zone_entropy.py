@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 
-# usage: ./bigram.py X36TrackDataS1S2-5-23-11 > entropy.csv
+# usage: ./zone_entropy.py X36TrackDataS1S2-5-23-11 > h-per-zone.csv
+
+
 
 
 import sys
@@ -13,10 +15,12 @@ from bigram import zones, bigrams, probs_bigrams, remove_self_transitions, h
 
 
 def print_header():
-  print ",".join(["Handling", "Rat", "Session", "Zone", "Entropy", "Between Zone Entropy", "Occupancy", "Out Transitions"])
+  print ",".join(["Treatment", "Rat", "Session", "Zone", "Entropy", "X Zone Entropy", "Occupancy", "Out Transitions"])
 
 
-def process_file(filename, handling, rat, session): 
+def process_file(filename, treatment, rat, session): 
+  """prints out a variety of statistics for each zone"""
+
   allzones = zones(filename)
 
   bi = bigrams(allzones)
@@ -39,7 +43,7 @@ def process_file(filename, handling, rat, session):
 
     #print "\t%4s : %4d * %f -> %4s" % (zone, count, entropy, details)
   
-    print ','.join([handling, rat, session, zone, str(entropy), str(bz_entropy), str(count), str(bz_count)])
+    print ','.join([treatment, rat, session, zone, str(entropy), str(bz_entropy), str(count), str(bz_count)])
 
   #print "\tzone transitions:       %d" % total_count
   #print "\ttotal entropy:          %f" % total_entropy 
@@ -50,8 +54,8 @@ def main(argv=None):
   #root_dir = 'X36TrackDataS1S2-5-23-11'
   print_header()
 
-  for (infile, handling, rat, session) in directory_search.main(argv): 
-    process_file(infile, handling, rat, session)
+  for (infile, treatment, rat, session) in directory_search.main(argv): 
+    process_file(infile, treatment, rat, session)
 
 
 if __name__ == '__main__':
