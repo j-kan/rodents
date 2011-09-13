@@ -109,6 +109,9 @@ def zones(filename):
     return [row[zone_column] for row in reader] 
 
 
+def epoch_from_time(time, num_epochs):
+     return int(float(time) // (1800/num_epochs))
+
 def zones_by_epoch(filename, num_epochs):
   """retrieve the zone sequence from a csv file, splitting up into a number of epochs"""
 
@@ -119,7 +122,7 @@ def zones_by_epoch(filename, num_epochs):
       time_column = get_column_index('Time', headers)
       zone_column = get_column_index('Zone', headers)
 
-      return [(int (float(row[time_column]) // (1800/num_epochs)), row[zone_column]) for row in reader] 
+      return [(epoch_from_time(row[time_column], num_epochs), row[zone_column]) for row in reader] 
 
   return [[v for (k,v) in group] for key, group in groupby(zones_with_epoch(), lambda x: x[0])]
     
@@ -130,7 +133,9 @@ def xy(filename):
   with open(filename, 'r') as f: 
     reader = csv.reader(f) 
     reader.next()
-    return [(int(row[X_COL]),int(row[Y_COL])) for row in reader if row[X_COL] != '' and row[Y_COL] != ''] 
+    return [(int(row[X_COL]),int(row[Y_COL])) 
+            for row in reader 
+            if row[X_COL] != '' and row[Y_COL] != ''] 
 
 
 def euclidean_distance((x2,y2),(x1,y1)):
@@ -143,26 +148,30 @@ def total_distance(pos):
   return sum([euclidean_distance(p2, p1) for [p2,p1] in zip(pos[1:], pos[0:len(pos)-1])])
 
 
+def distance_by_epoch(filename, num_epochs):
+  """retrieve the distance traveled from a csv file, splitting up into a number of epochs"""
 
-#def distance_by_epoch(filename, num_epochs):
-  #"""retrieve the distance traveled from a csv file, splitting up into a number of epochs"""
+  def xy_with_epoch():
+    with open(filename, 'r') as f: 
+      reader = csv.reader(f) 
+      headers = reader.next()
+      time_column = get_column_index('Time', headers)
+      return [(epoch_from_time(row[time_column], num_epochs), (int(row[X_COL]), int(row[Y_COL])))
+              for row in reader 
+              if row[X_COL] != '' and row[Y_COL] != ''] 
 
-  #def zones_with_epoch():
-    #with open(filename, 'r') as f: 
-      #reader = csv.reader(f) 
-      #reader.next()
-      #return [(int (float(row[TIME_COL]) // (1800/num_epochs)), row[ZONE_COL]) for row in reader] 
-
-  #return [[v for (k,v) in group] for key, group in groupby(zones_with_epoch(), lambda x: x[0])]
+  pos = xy_with_epoch()
+  pairs = [(e1, euclidean_distance(p2, p1)) for ((e2,p2),(e1,p1)) in zip(pos[1:], pos[0:len(pos)-1])]
+  return [sum([d for (e,d) in group]) for key, group in groupby(pairs, lambda x: x[0])]
     
 
 def print_header():
-  print ",".join(["Treatment", "Rat", "Session", "Distance", "Observations",
-                  "Entropy", "Cond Entropy", "Sum Entropy", "Unweighted Sum Entropy", 
+  print ",".join(["Treatment", "Rat", "Session", "Observations", 
+                  "Distance", "Entropy", "Cond Entropy", "Sum Entropy", "Unweighted Sum Entropy", 
                   "X Zone Cond Entropy", "X Zone Transitions", "X Zone Sum Entropy", "X Zone Unweighted Entropy"])
 
 
-def process_file(filename, handling, rat, session, print_dicts=False): 
+def process_file(filename, treatment, rat, session, print_dicts=False): 
   """prints one row per file containing all calculated statistics"""
 
   allzones = zones(filename)
@@ -219,15 +228,15 @@ def process_file(filename, handling, rat, session, print_dicts=False):
       print "\t%4s : %4d * %f -> %4s" % (zone, count, entropy, details)
   
 
-  bigram_entropy = total_entropy / total_count
+  bigram_entropy    = total_entropy / total_count
   bigram_bz_entropy = total_between_zone_entropy / total_between_zone_count
 
   print ','.join(
-      [str(x) for x in [handling, rat, session, distance, len(allzones),
-                        unigram_entropy, bigram_entropy,  total_entropy, total_unweighted_entropy, 
+      [str(x) for x in [treatment, rat, session, len(allzones),
+                        distance, unigram_entropy, bigram_entropy,  total_entropy, total_unweighted_entropy, 
                         bigram_bz_entropy, total_between_zone_count, total_between_zone_entropy, total_between_zone_unweighted_entropy]])
 
-      #[str(x) for x in [handling, rat, session, 
+      #[str(x) for x in [treatment, rat, session, 
                         #unigram_entropy, u_h, sum(unigram_counts.values()),
                         #bigram_entropy,  b_h]])
 
@@ -241,8 +250,8 @@ def main(argv=None):
 
   print_header()
 
-  for (infile, handling, rat, session) in directory_search.main(argv): 
-    process_file(infile, handling, rat, session, False)
+  for (infile, treatment, rat, session) in directory_search.main(argv): 
+    process_file(infile, treatment, rat, session, False)
 
 
 if __name__ == '__main__':
