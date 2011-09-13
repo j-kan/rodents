@@ -6,6 +6,7 @@ import glob
 
 
 def raw_csv_files(root_dir):
+  """searches for raw track data csvs in a particular directory"""
 
   #grepper = re.compile('^%s\/X36TrackDataS(\d)\/X36-([en])h-T29r(\d+)s(\d)\.csv$' % root_dir) 
   grepper = re.compile('^%s\/X\d+-(\w+)-T\d+r(\d+)s(\d)\.csv$' % root_dir) 
@@ -23,6 +24,10 @@ def raw_csv_files(root_dir):
 
 
 def zone_csv_directory_search(root_dir):
+  """searches for post-processed csvs (where appearance in a zone is a
+     categorical attribute rather than a binary feature) in a particular
+     directory, following the standard naming convention."""
+
   grepper = re.compile('^%s\/(\w+)-r(\d+)-s(\d)\.csv$' % root_dir)
   
   for infile in glob.glob( '%s/*.csv' % root_dir): 
