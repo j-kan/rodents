@@ -19,8 +19,8 @@ def print_header():
 
 
 def process_file(filename, treatment, rat, session, num_epochs, print_dict=False): 
-  allzones_by_epoch = zones_by_epoch(filename,3)
-  distances_by_epoch = distance_by_epoch(filename,3)
+  allzones_by_epoch = zones_by_epoch(filename,num_epochs)
+  distances_by_epoch = distance_by_epoch(filename,num_epochs)
 
   for epoch, (ezones, edist) in enumerate(zip(allzones_by_epoch, distances_by_epoch)):
     unigram_counts  = unigrams(ezones)
@@ -70,7 +70,7 @@ def main(argv=None):
   print_header()
 
   for (infile, treatment, rat, session) in directory_search.main(argv): 
-    process_file(infile, treatment, rat, session, 3)
+    process_file(infile, treatment, rat, session, 6)
 
 
 if __name__ == '__main__':
