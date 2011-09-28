@@ -72,8 +72,8 @@ def process_file(filename, treatment, rat, session):
     #impossible_transitions = [(zone, z2, pr) for (z2, pr) in p.iteritems() if z2 not in zone_destinations]
     impossible_transitions = find_impossible_transitions(zone_g, zone, p)
 
-    if len(impossible_transitions) > 0:
-      print "impossible transitions: " , treatment, rat, session, impossible_transitions
+    #if len(impossible_transitions) > 0:
+      #print "impossible transitions: " , treatment, rat, session, impossible_transitions
 
     entropy = h(p.values())
     count   = sum(bigram_counts[zone].values())
