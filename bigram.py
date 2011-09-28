@@ -51,12 +51,28 @@ def probs_bigrams(dict):
     return p
 
 
+
+def filter_dict(d, filterfn):
+    return dict([(k,v) for (k,v) in d.iteritems() if filterfn(k,v)])
+
 def remove_self_transition(zone, transitions): 
-    return dict([(k,v) for (k,v) in transitions.iteritems() if k != zone])
+    return filter_dict(transitions, lambda k,v: k != zone)
 
 def remove_self_transitions(allbigrams):
     return dict([(zone, remove_self_transition(zone, transitions)) for (zone, transitions) in allbigrams.iteritems()])
 
+def remove_terminal_transition(zone, transitions): 
+    return filter_dict(transitions, lambda k,v: k)
+
+
+def remove_terminal_transitions(allbigrams):
+    return dict([(zone, remove_terminal_transition(zone, transitions)) for (zone, transitions) in allbigrams.iteritems()])
+
+
+def find_impossible_transitions(zone_g, zone, zone_counts):
+    zone_destinations = zone_g[zone].keys() 
+    return [(zone, z2, c) for (z2, c) in zone_counts.iteritems() if z2 not in zone_destinations]
+  
 
 LOG2 = log(2)
 
